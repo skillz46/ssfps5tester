@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ssfps5tester Beta v0.7. Test inputs, sticks, triggers, touch, audio and lights, and read controller information.">
+<meta name="theme-color" content="#ff3820"><title>ssfps5tester</title>
+<link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./ps5.css"><link rel="stylesheet" href="./guided-controller.css"><link rel="stylesheet" href="./controller-tools.css"><link rel="stylesheet" href="./ssf.css">
+</head>
+<body>
+<a id="skip-content" class="skip-link" href="#main-content">Skip to content</a>
+<div class="app-shell">
+<header class="topbar"><a href="#/" class="brand" aria-label="ssfps5tester home"><img class="brand-logo" src="./images/ssf-logo.png" width="112" height="50" alt="SSF"><span class="brand-caption">PS5 tester</span></a><nav id="page-nav" class="page-nav" aria-label="Controller pages" hidden><span class="nav-indicator" aria-hidden="true"></span><a href="#/" data-page="home">Home</a><a href="#/test" data-page="test">Full test</a><a href="#/inputs" data-page="inputs">Live inputs</a><a href="#/info" data-page="info">Controller info</a></nav><div class="header-actions"><span id="workspace-label">No controller</span></div></header>
+<div class="workspace">
+<aside class="utility-rail" aria-label="Help and application information"><button id="help-open" class="rail-button" aria-label="Connection help" title="Connection help"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 .3c0 1.8-2.5 2-2.5 3.7M12 17h.01"/></svg></button><button id="credits-open" class="rail-button" aria-label="About &amp; credits" title="About &amp; credits"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg></button></aside>
+<main id="main-content" tabindex="-1">
+<section class="intro"><div id="connection-prompt"><h1 tabindex="-1">Connect a controller</h1><p>Plug it into this computer or pair it over Bluetooth, then press a button. For PlayStation details, connect by USB and select Connect PlayStation.</p></div><div class="intro-actions"><button id="connect" class="button primary">Connect PlayStation</button></div></section>
+<section id="connection-bar" class="connection-bar" aria-label="Controller connection" hidden><div class="connection-state"><span id="connection-dot" class="status-dot"></span><div><label for="device-select" class="sr-only">Select controller</label><select id="device-select" aria-label="Select controller"><option value="">Waiting for a controller</option></select><p id="connection-detail">Plug in or pair a controller, then press a button.</p></div></div><div class="connection-tags"><span id="source-tag" class="tag">Disconnected</span><button id="reset-session" class="icon-button" title="Reset session" aria-label="Reset session">↻</button></div></section>
+<div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+<div id="controller-pages" hidden>
+<section id="page-home" class="app-page page-home" aria-labelledby="home-title" hidden>
+<div class="page-heading"><h1 id="home-title" data-page-title tabindex="-1">Controller connected</h1><p id="home-controller-name"></p></div>
+<div class="home-links"><a href="#/test"><strong>Full test</strong><span>Guided checks for inputs, touch, motion, audio, lights and power.</span></a><a href="#/inputs"><strong>Live inputs</strong><span>Controller view, button pressure and stick precision.</span></a><a href="#/info"><strong>Controller info</strong><span>Battery, model, firmware and hardware identifiers.</span></a></div>
+<div id="ps5-panel"></div>
+</section>
+<section id="page-test" class="app-page" aria-labelledby="test-title" hidden>
+<div class="page-heading"><h1 id="test-title" data-page-title tabindex="-1">Full test</h1><p>Check the controller's inputs and hardware in one guided run.</p></div>
+<section class="test-all-card" aria-label="Full controller test">
+<div><h2>Guided controller test</h2><p>Checks advance as you use the controller. You can skip any check.</p></div>
+<button id="test-all" class="button primary" disabled>Start full test</button>
+</section>
+<section id="suite-panel" class="panel suite-panel is-idle" aria-label="Guided controller test" aria-disabled="true">
+<div class="suite-top"><div><h2 id="suite-title">Controller checks</h2></div><button id="suite-cancel" class="text-button">Stop test</button></div>
+<div id="suite-stepper" class="suite-stepper" aria-label="Test progress"></div>
+<div id="suite-controller-view"></div>
+<div class="suite-body"><div class="suite-copy"><span id="suite-step-number" class="small-label"></span><h3 id="suite-step-title" aria-live="polite"></h3><p id="suite-instructions"></p><div class="suite-meter"><span id="suite-progress"></span></div><p id="suite-detail" class="micro"></p></div>
+<div class="suite-tools">
+<div id="suite-live-note" class="suite-live-note"><span class="pulse-dot"></span><p>Use your controller. This check advances when the required inputs are observed.</p></div>
+<div id="suite-adaptive" hidden><p class="micro">Start the short test, then gently squeeze L2 and R2 to feel the resistance. The effect releases automatically.</p><button id="suite-play-adaptive" class="button secondary">Test both adaptive triggers</button><button id="suite-stop-adaptive" class="text-button">Stop resistance</button><p id="suite-adaptive-progress" class="micro" role="status"></p><div class="suite-answer"><button id="suite-adaptive-yes" class="button primary" disabled>Both triggers responded</button><button id="suite-adaptive-no" class="button secondary" disabled>Check needed</button></div></div>
+<div id="suite-lights" hidden><p class="micro">Watch the RGB light bar, player indicator patterns 1–5 and the microphone indicator. The cycle ends with the lights off.</p><button id="suite-play-lights" class="button secondary">Cycle controller lights</button><button id="suite-stop-lights" class="text-button">Stop light cycle</button><div class="tools-lights-row"><span id="suite-light-swatch" class="effects-swatch" aria-hidden="true"></span><span id="suite-lights-progress" class="micro" role="status">Ready to cycle.</span></div><div class="suite-answer"><button id="suite-lights-yes" class="button primary" disabled>All lights responded</button><button id="suite-lights-no" class="button secondary" disabled>Check needed</button></div></div>
+<div id="suite-vibration" hidden><p class="micro">Set the controller down, play a short pulse, then confirm what you felt.</p><button id="suite-play-vibration" class="button secondary">Play vibration</button><div class="suite-answer"><button id="suite-vibration-yes" class="button primary" disabled>Felt it</button><button id="suite-vibration-no" class="button secondary" disabled>Didn’t feel it</button></div></div>
+<div id="suite-speaker" hidden><label class="field-label" for="suite-output">Controller audio output</label><select id="suite-output" class="audio-select"><option value="">System default</option></select><p class="micro">Choose Built-in DualSense speaker for a supported USB controller. For other audio routes, select the controller’s output or set it as your system output. Computer speakers do not test the controller.</p><button id="suite-play-tone" class="button secondary">Play quiet tone</button><p id="suite-output-route" class="micro"></p><div class="suite-answer"><button id="suite-speaker-yes" class="button primary" disabled>Heard from controller</button><button id="suite-speaker-no" class="button secondary" disabled>No controller sound</button></div></div>
+<div id="suite-microphone" hidden><label class="field-label" for="suite-input">Controller microphone</label><select id="suite-input" class="audio-select"><option value="">Browser default (verify the device)</option></select><p class="micro">Select the controller mic, unmute it, then speak or tap beside it. Access lasts up to 10 seconds. Audio is metered locally and never recorded.</p><button id="suite-start-mic" class="button secondary">Allow & test microphone</button><div class="mic-level" role="meter" aria-label="Microphone level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="suite-mic-fill"></span></div><p id="suite-mic-source" class="micro">Microphone access is off.</p><label class="route-confirm"><input type="checkbox" id="suite-mic-is-controller"> This input is the controller microphone</label><div class="suite-answer"><button id="suite-mic-yes" class="button primary" disabled>Confirm mic response</button><button id="suite-mic-no" class="button secondary">No controller signal</button></div></div>
+<div id="suite-results" hidden><div id="suite-results-counts" class="suite-results-counts"></div><details class="suite-result-details"><summary>See each check</summary><div id="suite-result-list"></div></details><button id="suite-save" class="button primary">Save full test report</button><p class="micro">Results describe observed inputs and your confirmations. They do not certify hardware health or battery capacity.</p></div>
+</div></div>
+<div class="suite-bottom"><span id="suite-status-note" class="micro">Connect PlayStation over USB for touch, motion, and battery readings.</span><button id="suite-skip" class="text-button">Skip this check</button></div>
+</section>
+</section>
+<section id="page-inputs" class="app-page" aria-labelledby="inputs-title" hidden>
+<div class="page-heading inputs-heading"><div><h1 id="inputs-title" data-page-title tabindex="-1">Live inputs</h1><p>Buttons, triggers and stick precision.</p></div><div class="input-actions"><button id="export-report" class="button secondary" disabled>Save test report</button></div></div>
+<div class="dashboard">
+<section class="panel controller-panel"><div class="panel-heading"><div><span class="section-number">01</span><h2>Live inputs</h2></div><span id="input-status" class="small-label">NO CONTROLLER</span></div>
+<div class="controller-stage"><svg xmlns="http://www.w3.org/2000/svg" id="controller-visual" viewBox="0 -50 700 550" role="img" aria-label="Virtual controller outline with live buttons and analog sticks">
+  <g fill="#fbfcf8" stroke="#80958b" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M114 49C182 28 248 23 350 25C452 23 518 28 586 49C622 74 643 123 660 185C679 258 682 349 667 409C659 440 645 464 622 471C605 476 589 463 579 443L534 339C525 317 507 308 485 311C400 319 300 319 215 311C193 308 175 317 166 339L121 443C111 463 95 476 78 471C55 464 41 440 33 409C18 349 21 258 40 185C57 123 78 74 114 49Z" fill="#fbfcf8" stroke="#758c80" stroke-width="2.6"/>
+
+    <!-- Controls follow the shell so the shoulders remain visible. -->
+    <g class="shoulder" data-button="6" transform="translate(0 -28)"><path d="M108 43V26Q109 17 120 15L166 14Q178 14 180 25L182 35Z"/><text class="virtual-label shoulder-label" x="145" y="34">L2</text></g>
+    <g class="shoulder" data-button="7" transform="translate(0 -28)"><path d="M592 43V26Q591 17 580 15L534 14Q522 14 520 25L518 35Z"/><text class="virtual-label shoulder-label" x="555" y="34">R2</text></g>
+    <g class="shoulder" data-button="4" transform="translate(0 -14)"><path d="M98 57 103 40Q144 27 192 34L196 49 111 69Z"/><text class="virtual-label shoulder-label" x="145" y="49">L1</text></g>
+    <g class="shoulder" data-button="5" transform="translate(0 -14)"><path d="M602 57 597 40Q556 27 508 34L504 49 589 69Z"/><text class="virtual-label shoulder-label" x="555" y="49">R1</text></g>
+
+    <g class="pad-button touchpad-button" data-button="17"><path d="M227 40Q350 30 473 40Q483 41 481 53L469 151Q466 176 441 178H259Q234 176 231 151L219 53Q217 41 227 40Z" fill="#f6f9f2"/></g>
+    <g class="small-pad-button" data-button="8"><rect x="188" y="69" width="15" height="29" rx="7.5"/></g>
+    <g class="small-pad-button" data-button="9"><rect x="497" y="69" width="15" height="29" rx="7.5"/></g>
+
+    <g class="pad-button" data-button="12"><path d="M125 103Q125 95 133 95H151Q159 95 159 103V124L142 139 125 124Z"/></g>
+    <g class="pad-button" data-button="13"><path d="M125 199Q125 207 133 207H151Q159 207 159 199V178L142 163 125 178Z"/></g>
+    <g class="pad-button" data-button="14"><path d="M94 134Q86 134 86 142V160Q86 168 94 168H115L130 151 115 134Z"/></g>
+    <g class="pad-button" data-button="15"><path d="M190 134Q198 134 198 142V160Q198 168 190 168H169L154 151 169 134Z"/></g>
+
+    <g class="face-button" data-button="3"><circle cx="558" cy="100" r="23"/><path d="m558 87-13 23h26Z" fill="none" stroke="#8a9b92" stroke-width="1.8"/></g>
+    <g class="face-button" data-button="1"><circle cx="609" cy="151" r="23"/><circle cx="609" cy="151" r="12" fill="none" stroke="#8a9b92" stroke-width="1.8"/></g>
+    <g class="face-button" data-button="0"><circle cx="558" cy="202" r="23"/><path d="m548 192 20 20m0-20-20 20" fill="none" stroke="#8a9b92" stroke-width="1.8"/></g>
+    <g class="face-button" data-button="2"><circle cx="507" cy="151" r="23"/><rect x="496" y="140" width="22" height="22" fill="none" stroke="#8a9b92" stroke-width="1.8"/></g>
+
+    <circle cx="250" cy="250" r="48" class="stick-ring" fill="#f4f8ef" stroke="#92a497" stroke-width="2"/>
+    <circle id="visual-left-stick" cx="250" cy="250" r="33" data-center-x="250" data-center-y="250" class="visual-stick" data-button="10" fill="#fbfcf8" stroke="#80958b" stroke-width="2"/>
+    <circle cx="450" cy="250" r="48" class="stick-ring" fill="#f4f8ef" stroke="#92a497" stroke-width="2"/>
+    <circle id="visual-right-stick" cx="450" cy="250" r="33" data-center-x="450" data-center-y="250" class="visual-stick" data-button="11" fill="#fbfcf8" stroke="#80958b" stroke-width="2"/>
+
+    <g class="small-pad-button home-button" data-button="16"><circle cx="350" cy="250" r="14"/><circle cx="350" cy="250" r="5" fill="none" stroke="#8a9b92" stroke-width="1.5"/></g>
+    <g class="small-pad-button mute-button" data-button="18"><rect x="336" y="290" width="28" height="8" rx="4"/></g>
+  </g>
+
+  <g fill="none" stroke="#94a399" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m137 113 5-5 5 5m-10 76 5 5 5-5m-43-43-5 5 5 5m76-10 5 5-5 5"/>
+    <path d="M192 84h7m302-4h7m-7 4h7m-7 4h7"/>
+    <path d="M333 204h34m-28 8h22"/>
+  </g>
+  <g fill="#8b9c91" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="500" text-anchor="middle" letter-spacing="1">
+    <text id="left-trigger-outline-value" class="outline-trigger-percentage" x="145" y="-27">N/A</text><text id="right-trigger-outline-value" class="outline-trigger-percentage" x="555" y="-27">N/A</text>
+    <text x="350" y="110" font-size="9" letter-spacing="2">TOUCH</text>
+    <text x="350" y="316" font-size="8" letter-spacing="1.5">MIC</text>
+  </g>
+</svg>
+
+<div class="stage-caption"><span class="live-indicator"></span><span id="stage-caption">Your inputs appear here in real time</span></div></div>
+<div class="trigger-row"><div class="trigger"><div><span>L2 <em>/ LT</em></span><strong id="left-trigger-value">N/A</strong></div><div class="meter"><span id="left-trigger-fill"></span></div></div><div class="trigger"><div><span>R2 <em>/ RT</em></span><strong id="right-trigger-value">N/A</strong></div><div class="meter"><span id="right-trigger-fill"></span></div></div></div>
+</section>
+<section class="panel sticks-panel"><div class="panel-heading"><h2>Stick precision</h2><button id="clear-trails" class="text-button">Clear trails</button></div><div class="sticks-content"><article class="stick-card"><div class="stick-title"><h3>Left stick</h3><span id="left-coordinate">X N/A &nbsp; Y N/A</span></div><canvas id="left-canvas" width="320" height="250" aria-label="Left stick position and movement trail"></canvas><div class="stick-measures"><div><span>Center offset</span><strong id="left-offset">N/A</strong></div><div><span>Radial error</span><strong id="left-error">N/A</strong></div></div></article><article class="stick-card"><div class="stick-title"><h3>Right stick</h3><span id="right-coordinate">X N/A &nbsp; Y N/A</span></div><canvas id="right-canvas" width="320" height="250" aria-label="Right stick position and movement trail"></canvas><div class="stick-measures"><div><span>Center offset</span><strong id="right-offset">N/A</strong></div><div><span>Radial error</span><strong id="right-error">N/A</strong></div></div></article></div><div class="drift-controls"><div><strong id="drift-heading">Check for stick drift</strong><p id="drift-description">Leave both sticks untouched for a 3-second measurement.</p></div><button id="measure-drift" class="button secondary" disabled>Measure drift</button></div><div class="drift-progress" id="drift-progress" hidden><span></span></div><p class="micro sweep-note">Radial error appears after 80% sweep coverage. It describes the observed shape, not a hardware pass or fail.</p></section>
+<section class="panel buttons-panel"><div class="panel-heading"><div><span class="section-number">04</span><h2>Button check</h2></div><span class="legend"><i></i> Tested <i></i> Pressed</span></div><div id="button-grid" class="button-grid"></div><div id="raw-axes" class="raw-axes" hidden></div><p class="micro" id="button-hint">Live pressure above. A small dot marks each button you’ve tested.</p></section>
+</div>
+</section>
+<section id="page-info" class="app-page" aria-labelledby="info-title" hidden>
+<div class="page-heading info-header"><div><h1 id="info-title" data-page-title tabindex="-1">Controller info</h1><p>Information reported by the selected controller.</p></div><button id="info-refresh" class="button secondary">Read controller info</button></div>
+<p id="info-status" class="info-status" role="status" aria-live="polite">Open this page to read controller information.</p>
+<section id="details-panel" class="panel details-panel" aria-label="Battery and motion"><div class="details-grid"><div><h2>Battery</h2><strong id="battery-value">Unavailable</strong><p class="micro">Approximate level reported by the controller.</p></div><div><h2>Motion sensors</h2><p id="motion-values" class="sensor-values">Unavailable</p><p class="micro">Uncalibrated sensor readings.</p></div></div></section>
+<div class="info-groups"><section class="info-group" aria-labelledby="info-connection-title"><h2 id="info-connection-title">Connection</h2><dl id="info-connection"></dl></section><section class="info-group" aria-labelledby="info-software-title"><h2 id="info-software-title">Software</h2><dl id="info-software"></dl></section><section class="info-group" aria-labelledby="info-hardware-title"><h2 id="info-hardware-title">Hardware</h2><dl id="info-hardware"></dl></section></div>
+<p class="micro">Unavailable fields are not exposed by this controller or connection. Board and color lookups are labeled when inferred.</p>
+</section>
+</div>
+<footer><p>ssfps5tester</p><span class="version-label">Beta v0.7</span></footer>
+</main>
+</div>
+</div>
+<dialog id="help-dialog"><div class="dialog-heading"><h2>Connect your controller</h2><button class="icon-button close-dialog" aria-label="Close guide">×</button></div><p>Plug the controller into this computer or pair it over Bluetooth, then press a button. It should appear automatically.</p><p>For PlayStation firmware, hardware identifiers, touch, motion and battery, use a USB cable and select <strong>Connect PlayStation</strong> in a browser with WebHID support, such as Chrome or Edge.</p><p>After connection, choose Full test, Live inputs or Controller info. Stick precision is included in Live inputs.</p><button class="button primary close-dialog">Close help</button></dialog>
+<dialog id="credits-dialog"><div class="dialog-heading"><h2>ssfps5tester</h2><button class="icon-button close-dialog" aria-label="Close credits">×</button></div><p>Beta v0.7. Controller tests and information stay in this browser. No analytics are used.</p><p>PlayStation USB decoding and metadata queries are adapted from <a href="https://github.com/dualshock-tools/dualshock-tools.github.io" target="_blank" rel="noreferrer">DualShock Tools</a> by the_al and contributors, under the <a href="./third-party/dualshock-tools-LICENSE.txt" target="_blank">MIT license</a>.</p><p>Input observations do not certify hardware health. Firmware, calibration and pairing settings are not changed. Microphone audio is metered locally and is not recorded or uploaded.</p><p>The PS5 panel uses the separate <a href="https://github.com/chiaki-ng/chiaki-ng" target="_blank" rel="noreferrer">Chiaki-ng application</a> for Remote Play (AGPL-3.0). Pairing and account details remain in that application.</p><button class="button primary close-dialog">Close</button></dialog>
+<script type="module" src="./app.js"></script>
+</body></html>
